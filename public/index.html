@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANGMX STORE — UC & Diamond Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">BANGMX <span>STORE</span></a>
+            <div class="nav-links">
+                <a href="#pubg">PUBG Mobile</a>
+                <a href="#mlbb">Mobile Legends</a>
+                <a href="/admin.html" class="btn-admin">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <h1>Isi Ulang <span class="gradient">UC & Diamond</span> Game Favoritmu</h1>
+            <p class="hero-desc">Pilih game, input Player ID, bayar, dan dapatkan dalam hitungan menit.</p>
+            <div class="hero-trust">
+                <div class="trust-item"><span class="trust-num">Official Channel</span><span class="trust-label">Pending Partner Verification</span></div>
+                <div class="trust-item"><span class="trust-num">24/7</span><span class="trust-label">Ready to Serve</span></div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="products" class="container">
+            <h2 class="section-title">Pilih Produk</h2>
+            <div class="product-grid" id="product-grid"></div>
+        </section>
+
+        <section id="order-section" class="container order-section" style="display:none">
+            <h2 class="section-title">Input Data Order</h2>
+            <form id="order-form">
+                <input type="hidden" id="product-id">
+                <div class="form-group">
+                    <label>Player ID / User ID <span class="required">*</span></label>
+                    <input type="text" id="player-id" placeholder="Masukkan Player ID game" required>
+                </div>
+                <div class="form-group">
+                    <label>Nama Lengkap <span class="required">*</span></label>
+                    <input type="text" id="fullname" placeholder="Nama sesuai akun game" required>
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp / Contact</label>
+                    <input type="tel" id="contact" placeholder="0812xxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>Catatan (opsional)</label>
+                    <textarea id="notes" rows="2" placeholder="Server, region, atau catatan lain"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Buat Order</button>
+                <a href="#" id="cancel-order" class="btn btn-outline" style="display:none">Kembali</a>
+            </form>
+        </section>
+
+        <section id="payment-section" class="container payment-section" style="display:none">
+            <h2 class="section-title">Pembayaran</h2>
+            <div id="payment-info"></div>
+            <div class="payment-actions">
+                <a href="#" id="back-to-cart" class="btn btn-outline">Kembali ke Keranjang</a>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast-container"></div>
+    <script src="app.js"></script>
+</body>
+</html>

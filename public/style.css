@@ -73,7 +73,7 @@ a { text-decoration: none; color: inherit; }
 .hero-trust { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; }
 .trust-item { text-align: center; }
 .trust-num { display: block; font-weight: 700; color: var(--primary); font-size: 0.95rem; }
-.trust-label { font-size: 0.8rem; color: var(--text-dim); }
+.trust-label { font-size: 0.8rem; color: var(--text-muted); }
 
 /* Product Grid */
 .section-title { font-size: 1.4rem; font-weight: 700; margin: 32px 0 16px; text-align: center; }

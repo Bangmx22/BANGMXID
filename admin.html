@@ -12,25 +12,64 @@
             <a href="/" class="logo">BANGMX <span class="logo-sub">ADMIN</span></a>
             <div class="nav-links">
                 <a href="/">Kembali ke Toko</a>
-                <a href="/auth.html">Login / Daftar</a>
+                <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
             </div>
         </div>
     </nav>
-    <div class="container admin-container">
+    <div class="container admin-container" style="display:none" id="admin-main">
         <h1>Admin Dashboard</h1>
         <p class="text-muted">Kelola order yang masuk.</p>
         <div class="admin-section">
             <h2>Daftar Order</h2>
-            <div id="order-list" class="order-list"></div>
+            <div class="order-list" id="order-list"></div>
         </div>
+    </div>
+    <div class="container admin-container" id="admin-auth-banner" style="display:none">
+        <div class="alert alert-warning">
+            <strong>⚠️ Anda tidak login.</strong> Silakan login terlebih dahulu.
+        </div>
+        <a href="/auth.html" class="btn btn-primary">Login / Daftar</a>
     </div>
     <div id="toast-container"></div>
     <script src="app.js"></script>
     <script>
-async function loadOrdersAdmin() {
-    try {
-        const res = await fetch('/api/orders');
-        const orders = await res.json();
+    // ===== ADMIN PANEL LOGIC =====
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cek apakah admin sudah login (simpan di localStorage)
+        const isLoggedIn = localStorage.getItem('bangmx_admin_loggedin') === 'true';
+        if (isLoggedIn) {
+            document.getElementById('admin-auth-banner').style.display = 'none';
+            document.getElementById('admin-main').style.display = 'block';
+            loadOrdersAdmin();
+        } else {
+            document.getElementById('admin-main').style.display = 'none';
+            document.getElementById('admin-auth-banner').style.display = 'block';
+            showToast('Silakan login untuk mengakses admin.', 'warning');
+        }
+    });
+
+    async function loadOrdersAdmin() {
+        try {
+            const res = await fetch('/api/orders');
+            if (!res.ok) throw new Error('API tidak tersedia');
+            const orders = await res.json();
+            renderOrders(orders);
+        } catch (err) {
+            // Fallback: coba ambil dari localStorage (kalau ada)
+            const stored = localStorage.getItem('bangmx_order_history') || '[]';
+            const orders = JSON.parse(stored);
+            if (orders.length) {
+                renderOrders(orders);
+            } else {
+                showToast('Gagal connect ke server. Gunakan mode demo.', 'warning');
+                document.getElementById('order-list').innerHTML = 
+                    '<p class="text-muted">Belum ada order atau server tidak tersedia.</p>';
+            }
+        }
+    }
+
+    function renderOrders(orders) {
         const container = document.getElementById('order-list');
         container.innerHTML = '';
         if (!orders.length) {
@@ -40,10 +79,11 @@ async function loadOrdersAdmin() {
         orders.forEach(order => {
             const card = document.createElement('div');
             card.className = 'order-card';
+            const statusClass = 'status-' + (order.status || 'pending').toLowerCase();
             card.innerHTML = `
                 <div class="order-header">
                     <span class="order-id">#${order.id.slice(0,8)}</span>
-                    <span class="order-status status-${order.status}">${order.status}</span>
+                    <span class="status-badge ${statusClass}">${(order.status || 'pending').toUpperCase()}</span>
                 </div>
                 <div class="order-body">
                     <p><strong>Produk:</strong> ${order.productName} (${order.game})</p>
@@ -51,7 +91,7 @@ async function loadOrdersAdmin() {
                     <p><strong>Player ID:</strong> ${order.playerId}</p>
                     <p><strong>Pembeli:</strong> ${order.customerInfo?.fullname || '-'}</p>
                     <p><strong>Contact:</strong> ${order.customerInfo?.contact || '-'}</p>
-                    <p><strong>Waktu:</strong> ${new Date(order.createdAt).toLocaleString('id-ID')}</p>
+                    <p><strong>Waktu:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString('id-ID') : '-'}</p>
                     ${order.paymentProof ? `<p class="payment-proof"><strong>Bukti:</strong> ${order.paymentProof}</p>` : ''}
                     ${order.notes ? `<p class="order-notes"><strong>Catatan:</strong> ${order.notes}</p>` : ''}
                 </div>
@@ -63,85 +103,89 @@ async function loadOrdersAdmin() {
             `;
             container.appendChild(card);
         });
-    } catch (err) {
-        showToast('Gagal: '+err.message, 'error');
     }
-}
-async function confirmPayment(orderId) {
-    const proof = prompt('Bukti pembayaran (nomor transaksi / keterangan):');
-    if (!proof) return;
-    try {
-        const res = await fetch(`/api/orders/${orderId}/status`, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({status:'paid', paymentProof: proof})
-        });
-        const data = await res.json();
-        if (res.ok) {
+
+    async function confirmPayment(orderId) {
+        const proof = prompt('Bukti pembayaran (nomor transaksi / keterangan):');
+        if (!proof) return;
+        try {
+            const res = await fetch(`/api/orders/${orderId}/status`, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({status:'paid', paymentProof: proof})
+            });
+            if (!res.ok) throw new Error('Gagal');
             showToast('Pembayaran dikonfirmasi!', 'success');
+            // Simpan ke localStorage juga
+            saveOrderToLocalStorage({ id: orderId, status: 'paid', paymentProof: proof });
             loadOrdersAdmin();
-        } else {
-            showToast(data.error || 'Gagal konfirmasi', 'error');
+        } catch (err) {
+            // Fallback localStorage
+            saveOrderToLocalStorage({ id: orderId, status: 'paid', paymentProof: proof });
+            showToast('Pembayaran dikonfirmasi (mode demo)!', 'success');
+            loadOrdersAdmin();
         }
-    } catch (err) {
-        showToast('Gagal: '+err.message, 'error');
     }
-}
-async function deliverOrder(orderId) {
-    const notes = prompt('Catatan pengiriman (misal: kode UC/Diamond):', '');
-    if (notes === null) return;
-    try {
-        await fetch(`/api/orders/${orderId}/notes`, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({notes: notes || 'Tanpa catatan'})
-        });
-        const res = await fetch(`/api/orders/${orderId}/status`, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({status:'delivered'})
-        });
-        if (res.ok) {
+
+    async function deliverOrder(orderId) {
+        const notes = prompt('Catatan pengiriman (misal: kode UC/Diamond):', '') || 'Tanpa catatan';
+        try {
+            await fetch(`/api/orders/${orderId}/notes`, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({notes: notes})
+            });
+            const res = await fetch(`/api/orders/${orderId}/status`, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({status:'delivered'})
+            });
+            if (!res.ok) throw new Error('Gagal');
             showToast('Order dikirim!', 'success');
+            saveOrderToLocalStorage({ id: orderId, status: 'delivered', notes: notes });
             loadOrdersAdmin();
-        } else {
-            const data = await res.json();
-            showToast(data.error || 'Gagal update status', 'error');
+        } catch (err) {
+            saveOrderToLocalStorage({ id: orderId, status: 'delivered', notes: notes });
+            showToast('Order dikirim (mode demo)!', 'success');
+            loadOrdersAdmin();
         }
-    } catch (err) {
-        showToast('Gagal: '+err.message, 'error');
     }
-}
-async function cancelOrder(orderId) {
-    if (!confirm('Yakin ingin membatalkan order ini?')) return;
-    try {
-        const res = await fetch(`/api/orders/${orderId}/status`, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({status:'failed'})
-        });
-        if (res.ok) {
+
+    async function cancelOrder(orderId) {
+        if (!confirm('Yakin ingin membatalkan order ini?')) return;
+        try {
+            const res = await fetch(`/api/orders/${orderId}/status`, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({status:'failed'})
+            });
+            if (!res.ok) throw new Error('Gagal');
             showToast('Order dibatalkan', 'warning');
+            saveOrderToLocalStorage({ id: orderId, status: 'failed' });
             loadOrdersAdmin();
-        } else {
-            const data = await res.json();
-            showToast(data.error || 'Gagal', 'error');
+        } catch (err) {
+            saveOrderToLocalStorage({ id: orderId, status: 'failed' });
+            showToast('Order dibatalkan (mode demo)', 'warning');
+            loadOrdersAdmin();
         }
-    } catch (err) {
-        showToast('Gagal: '+err.message, 'error');
     }
-}
-document.addEventListener('DOMContentLoaded', loadOrdersAdmin);
-setInterval(loadOrdersAdmin, 30000);
-function showToast(message, type='success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<span class="toast-icon">${type==='success'?'✅':type==='error'?'❌':'⚠️'}</span><span>${message}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-}
+
+    function saveOrderToLocalStorage(update) {
+        const stored = localStorage.getItem('bangmx_order_history') || '[]';
+        const orders = JSON.parse(stored);
+        const idx = orders.findIndex(o => o.id === update.id);
+        if (idx >= 0) {
+            orders[idx] = { ...orders[idx], ...update };
+        } else {
+            orders.push(update);
+        }
+        localStorage.setItem('bangmx_order_history', JSON.stringify(orders));
+    }
+
+    function logout() {
+        localStorage.removeItem('bangmx_admin_session');
+        window.location.href = '/auth.html';
+    }
     </script>
 </body>
 </html>

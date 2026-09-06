@@ -202,9 +202,125 @@ a { text-decoration: none; color: inherit; }
 }
 .toast.success { border-left: 3px solid var(--success); }
 .toast.error { border-left: 3px solid var(--danger); }
+.toast.warning { border-left: 3px solid var(--warning); }
+.toast-icon { margin-right: 8px; }
 @keyframes slideIn {
     from { opacity: 0; transform: translateX(20px); }
     to { opacity: 1; transform: translateX(0); }
+}
+
+/* Text */
+.text-muted { color: var(--text-muted); }
+
+/* Badge / Status */
+.status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.status-paid { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.status-processing { background: rgba(0, 229, 255, 0.15); color: var(--primary); }
+.status-delivered { background: rgba(124, 77, 255, 0.15); color: var(--secondary); }
+.status-failed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+/* Button sm */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: none;
+}
+.btn-danger:hover { opacity: 0.9; }
+
+/* Admin Panel */
+.admin-container {
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.admin-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+}
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.order-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+}
+.order-card:hover {
+    border-color: var(--primary);
+}
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.order-id {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+.order-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.order-body {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+.order-body p {
+    margin-bottom: 4px;
+}
+.order-body strong {
+    color: var(--text);
+}
+.order-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+.payment-proof, .order-notes {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 8px;
+}
+.payment-proof strong, .order-notes strong {
+    color: var(--text);
+}
+
+/* Navbar di admin */
+.logo-sub {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    display: block;
+    margin-top: 2px;
 }
 
 /* Mobile */
@@ -213,4 +329,5 @@ a { text-decoration: none; color: inherit; }
     .hero-trust { gap: 16px; }
     .product-grid { grid-template-columns: 1fr; }
     .navbar .container { flex-direction: column; gap: 8px; }
+    .order-actions { flex-direction: column; }
 }

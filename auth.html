@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — BANGMX STORE Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">BANGMX <span>STORE</span></a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Admin Panel</h1>
+                <p class="text-muted">Login untuk mengelola order</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <h2>Masuk</h2>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" placeholder="Masukkan username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="Masukkan password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                <p class="auth-switch">Belum punya akun? <a href="#" id="goto-register">Daftar di sini</a></p>
+            </form>
+
+            <!-- Register Form (hidden by default) -->
+            <form id="register-form" class="auth-form" style="display:none">
+                <h2>Daftar</h2>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="register-username" placeholder="Pilih username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="register-password" placeholder="Pilih password" required>
+                </div>
+                <div class="form-group">
+                    <label>Konfirmasi Password</label>
+                    <input type="password" id="register-confirm" placeholder="Ulangi password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Daftar</button>
+                <p class="auth-switch">Sudah punya akun? <a href="#" id="goto-login">Login di sini</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+    <script src="app.js"></script>
+    <script>
+    // ===== AUTH LOGIC =====
+
+    // Default admin credentials (bisa diganti di sini atau lewat register)
+    // Untuk production, sebaiknya pakai backend yang sesungguhnya
+    const DEFAULT_ADMIN = {
+        username: 'admin',
+        password: 'bangmx2024'
+    };
+
+    // Simpan credentials di localStorage (mode demo)
+    function getCredentials() {
+        const stored = localStorage.getItem('bangmx_admin_credentials');
+        if (stored) {
+            try { return JSON.parse(stored); } catch(e) {}
+        }
+        return { [DEFAULT_ADMIN.username]: DEFAULT_ADMIN.password };
+    }
+
+    function saveCredentials(username, password) {
+        const creds = getCredentials();
+        creds[username] = password;
+        localStorage.setItem('bangmx_admin_credentials', JSON.stringify(creds));
+    }
+
+    function checkLogin() {
+        return localStorage.getItem('bangmx_admin_loggedin') === 'true';
+    }
+
+    function setLogin(username) {
+        localStorage.setItem('bangmx_admin_loggedin', 'true');
+        localStorage.setItem('bangmx_admin_username', username);
+    }
+
+    function logout() {
+        localStorage.removeItem('bangmx_admin_loggedin');
+        localStorage.removeItem('bangmx_admin_username');
+        window.location.href = '/auth.html';
+    }
+
+    // QuerSelectors
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const gotoRegister = document.getElementById('goto-register');
+    const gotoLogin = document.getElementById('goto-login');
+
+    // Toggle forms
+    gotoRegister.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+    });
+    gotoLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    });
+
+    // If already logged in, redirect to admin
+    if (checkLogin()) {
+        window.location.href = '/admin.html';
+    }
+
+    // Login submit
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        if (!username || !password) {
+            showToast('Username dan password wajib diisi', 'error');
+            return;
+        }
+
+        const creds = getCredentials();
+        if (creds[username] && creds[username] === password) {
+            setLogin(username);
+            showToast(`Selamat datang, ${username}!`, 'success');
+            setTimeout(() => window.location.href = '/admin.html', 500);
+        } else {
+            showToast('Username atau password salah', 'error');
+        }
+    });
+
+    // Register submit
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value;
+        const confirm = document.getElementById('register-confirm').value;
+
+        if (!username || !password) {
+            showToast('Semua field wajib diisi', 'error');
+            return;
+        }
+        if (password !== confirm) {
+            showToast('Password dan konfirmasi tidak cocok', 'error');
+            return;
+        }
+        if (username.length < 3) {
+            showToast('Username minimal 3 karakter', 'error');
+            return;
+        }
+
+        const creds = getCredentials();
+        if (creds[username]) {
+            showToast('Username sudah dipakai', 'error');
+            return;
+        }
+
+        saveCredentials(username, password);
+        showToast('Akun berhasil dibuat! Silakan login.', 'success');
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        document.getElementById('login-username').value = username;
+        document.getElementById('login-password').value = '';
+    });
+    </script>
+</body>
+</html>

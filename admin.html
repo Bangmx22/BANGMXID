@@ -183,7 +183,8 @@
     }
 
     function logout() {
-        localStorage.removeItem('bangmx_admin_session');
+        localStorage.removeItem('bangmx_admin_loggedin');
+        localStorage.removeItem('bangmx_admin_username');
         window.location.href = '/auth.html';
     }
     </script>

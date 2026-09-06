@@ -1,5 +1,11 @@
 // BANGMX STORE — App.js
-const API = '';
+
+// Rekening pembayaran (ganti sesuai kebutuhan)
+const BANK_ACCOUNTS = {
+    banks: ['Bank BCA', 'Bank Mandiri', 'Bank BRI'],
+    accountNumber: '123-456-7890',
+    accountName: 'BANGMX Store'
+};
 
 let currentProduct = null;
 let currentOrder = null;
@@ -12,27 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-async function loadProducts() {
-    try {
-        const res = await fetch(`${API}/api/products`);
-        const products = await res.json();
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = '';
-        products.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                <span class="game-tag">${p.game}</span>
-                <h3>${p.name}</h3>
-                <p class="desc">${p.desc}</p>
-                <div class="price">Rp ${p.price.toLocaleString('id-ID')}</div>
-                <button class="btn btn-primary" onclick="selectProduct('${p.id}')">Pilih & Order</button>
-            `;
-            grid.appendChild(card);
-        });
-    } catch (err) {
-        showToast('Gagal memuat produk: ' + err.message, 'error');
-    }
+function loadProducts() {
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = '';
+    PRODUCTS.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <span class="game-tag">${p.game}</span>
+            <h3>${p.name}</h3>
+            <p class="desc">${p.desc}</p>
+            <div class="price">Rp ${p.price.toLocaleString('id-ID')}</div>
+            <button class="btn btn-primary" onclick="selectProduct('${p.id}')">Pilih & Order</button>
+        `;
+        grid.appendChild(card);
+    });
 }
 
 function selectProduct(productId) {
@@ -58,30 +58,25 @@ document.getElementById('order-form')?.addEventListener('submit', async (e) => {
     if (!fullname) { showToast('Nama lengkap wajib diisi', 'error'); return; }
     
     const productId = document.getElementById('product-id').value;
+    const product = PRODUCTS.find(p => p.id === productId);
     
-    try {
-        const res = await fetch(`${API}/api/orders`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                playerId,
-                productId,
-                paymentMethod: 'transfer',
-                customerInfo: { fullname, contact, notes },
-            })
-        });
-        const order = await res.json();
-        if (res.ok) {
-            currentOrder = order;
-            showPaymentInfo(order);
-            showSection('payment-section');
-            showToast('Order berhasil dibuat! Melakukan pembayaran.', 'success');
-        } else {
-            showToast(order.error || 'Gagal membuat order', 'error');
-        }
-    } catch (err) {
-        showToast('Gagal: ' + err.message, 'error');
-    }
+    // Buat order lokal (tanpa backend — cukup untuk tampilkan info pembayaran)
+    const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const order = {
+        id: orderId,
+        productName: product.name,
+        game: product.game,
+        price: product.price,
+        playerId: playerId,
+        customerInfo: { fullname, contact, notes },
+        status: 'Pending',
+        createdAt: new Date().toLocaleString('id-ID'),
+    };
+    
+    currentOrder = order;
+    showPaymentInfo(order);
+    showSection('payment-section');
+    showToast('Order berhasil dibuat! Melakukan pembayaran.', 'success');
 });
 
 function showPaymentInfo(order) {
@@ -94,9 +89,11 @@ function showPaymentInfo(order) {
         <p><strong>Status:</strong> <span style="color: var(--warning)">${order.status}</span></p>
         
         <div class="payment-rekening">
-            <div class="rekeningrow"><span class="rekening-label">Bank</span><span>Bank BCA / Mandiri / BRI</span></div>
-            <div class="rekeningrow"><span class="rekening-label">No. Rekening</span><span>123-456-7890</span></div>
-            <div class="rekeningrow"><span class="rekening-label">Atas Nama</span><span>BANGMX Store</span></div>
+            ${BANK_ACCOUNTS.banks.map(bank => `
+                <div class="rekening-row"><span class="rekening-label">Bank</span><span>${bank}</span></div>
+            `).join('')}
+            <div class="rekening-row"><span class="rekening-label">No. Rekening</span><span>${BANK_ACCOUNTS.accountNumber}</span></div>
+            <div class="rekening-row"><span class="rekening-label">Atas Nama</span><span>${BANK_ACCOUNTS.accountName}</span></div>
         </div>
         
         <div class="payment-note">

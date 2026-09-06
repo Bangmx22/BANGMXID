@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — BANGMX STORE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">BANGMX <span class="logo-sub">ADMIN</span></a>
+            <div class="nav-links">
+                <a href="/">Kembali ke Toko</a>
+                <a href="/auth.html">Login / Daftar</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container admin-container">
+        <h1>Admin Dashboard</h1>
+        <p class="text-muted">Kelola order yang masuk.</p>
+        <div class="admin-section">
+            <h2>Daftar Order</h2>
+            <div id="order-list" class="order-list"></div>
+        </div>
+    </div>
+    <div id="toast-container"></div>
+    <script src="app.js"></script>
+    <script>
+async function loadOrdersAdmin() {
+    try {
+        const res = await fetch('/api/orders');
+        const orders = await res.json();
+        const container = document.getElementById('order-list');
+        container.innerHTML = '';
+        if (!orders.length) {
+            container.innerHTML = '<p class="text-muted">Belum ada order.</p>';
+            return;
+        }
+        orders.forEach(order => {
+            const card = document.createElement('div');
+            card.className = 'order-card';
+            card.innerHTML = `
+                <div class="order-header">
+                    <span class="order-id">#${order.id.slice(0,8)}</span>
+                    <span class="order-status status-${order.status}">${order.status}</span>
+                </div>
+                <div class="order-body">
+                    <p><strong>Produk:</strong> ${order.productName} (${order.game})</p>
+                    <p><strong>Harga:</strong> Rp ${order.price.toLocaleString('id-ID')}</p>
+                    <p><strong>Player ID:</strong> ${order.playerId}</p>
+                    <p><strong>Pembeli:</strong> ${order.customerInfo?.fullname || '-'}</p>
+                    <p><strong>Contact:</strong> ${order.customerInfo?.contact || '-'}</p>
+                    <p><strong>Waktu:</strong> ${new Date(order.createdAt).toLocaleString('id-ID')}</p>
+                    ${order.paymentProof ? `<p class="payment-proof"><strong>Bukti:</strong> ${order.paymentProof}</p>` : ''}
+                    ${order.notes ? `<p class="order-notes"><strong>Catatan:</strong> ${order.notes}</p>` : ''}
+                </div>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-outline" onclick="confirmPayment('${order.id}')" ${order.status==='paid'?'disabled':''}>✅ Konfirmasi Bayar</button>
+                    <button class="btn btn-sm btn-outline" onclick="deliverOrder('${order.id}')" ${order.status!=='paid'?'disabled':''}>📦 Kirim</button>
+                    <button class="btn btn-sm btn-danger" onclick="cancelOrder('${order.id}')" ${order.status==='delivered'?'disabled':''}>❌ Batal</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        showToast('Gagal: '+err.message, 'error');
+    }
+}
+async function confirmPayment(orderId) {
+    const proof = prompt('Bukti pembayaran (nomor transaksi / keterangan):');
+    if (!proof) return;
+    try {
+        const res = await fetch(`/api/orders/${orderId}/status`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({status:'paid', paymentProof: proof})
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Pembayaran dikonfirmasi!', 'success');
+            loadOrdersAdmin();
+        } else {
+            showToast(data.error || 'Gagal konfirmasi', 'error');
+        }
+    } catch (err) {
+        showToast('Gagal: '+err.message, 'error');
+    }
+}
+async function deliverOrder(orderId) {
+    const notes = prompt('Catatan pengiriman (misal: kode UC/Diamond):', '');
+    if (notes === null) return;
+    try {
+        await fetch(`/api/orders/${orderId}/notes`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({notes: notes || 'Tanpa catatan'})
+        });
+        const res = await fetch(`/api/orders/${orderId}/status`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({status:'delivered'})
+        });
+        if (res.ok) {
+            showToast('Order dikirim!', 'success');
+            loadOrdersAdmin();
+        } else {
+            const data = await res.json();
+            showToast(data.error || 'Gagal update status', 'error');
+        }
+    } catch (err) {
+        showToast('Gagal: '+err.message, 'error');
+    }
+}
+async function cancelOrder(orderId) {
+    if (!confirm('Yakin ingin membatalkan order ini?')) return;
+    try {
+        const res = await fetch(`/api/orders/${orderId}/status`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({status:'failed'})
+        });
+        if (res.ok) {
+            showToast('Order dibatalkan', 'warning');
+            loadOrdersAdmin();
+        } else {
+            const data = await res.json();
+            showToast(data.error || 'Gagal', 'error');
+        }
+    } catch (err) {
+        showToast('Gagal: '+err.message, 'error');
+    }
+}
+document.addEventListener('DOMContentLoaded', loadOrdersAdmin);
+setInterval(loadOrdersAdmin, 30000);
+function showToast(message, type='success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span class="toast-icon">${type==='success'?'✅':type==='error'?'❌':'⚠️'}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+    </script>
+</body>
+</html>

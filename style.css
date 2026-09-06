@@ -1,0 +1,216 @@
+/* BANGMX STORE — Global CSS (minimal) */
+:root {
+    --primary: #00e5ff;
+    --primary-dark: #00b8d4;
+    --secondary: #7c4dff;
+    --bg: #0a0e1a;
+    --bg-card: #111827;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #1e293b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --gradient-primary: linear-gradient(135deg, #00e5ff, #7c4dff);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+.container { width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px; }
+a { text-decoration: none; color: inherit; }
+
+/* Navbar */
+.navbar {
+    position: sticky;
+    top: 0;
+    background: rgba(10, 14, 26, 0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    z-index: 100;
+}
+.navbar .container { display: flex; align-items: center; justify-content: space-between; }
+.logo {
+    font-weight: 800;
+    font-size: 1.3rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+}
+.nav-links { display: flex; gap: 16px; align-items: center; }
+.nav-links a { color: var(--text-muted); font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.btn-admin {
+    background: var(--border);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+.btn-admin:hover { background: var(--text-muted); color: var(--bg); }
+
+/* Hero */
+.hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 50%, #1a1040 100%);
+    padding: 60px 0 40px;
+    text-align: center;
+}
+.hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
+.hero .gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-desc { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 24px; }
+.hero-trust { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; }
+.trust-item { text-align: center; }
+.trust-num { display: block; font-weight: 700; color: var(--primary); font-size: 0.95rem; }
+.trust-label { font-size: 0.8rem; color: var(--text-dim); }
+
+/* Product Grid */
+.section-title { font-size: 1.4rem; font-weight: 700; margin: 32px 0 16px; text-align: center; }
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+.product-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+}
+.product-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.product-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+.product-card .game-tag {
+    display: inline-block;
+    background: rgba(0, 229, 255, 0.1);
+    color: var(--primary);
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+.product-card .price { font-size: 1.2rem; font-weight: 700; color: var(--success); margin: 8px 0; }
+.product-card .desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.btn-primary { background: var(--gradient-primary); color: white; }
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-lg { padding: 12px 28px; font-size: 1rem; }
+
+/* Order/Payment Sections */
+.order-section, .payment-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 16px;
+}
+.form-group { margin-bottom: 16px; }
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+}
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+.required { color: var(--danger); }
+
+.payment-info {
+    background: rgba(0, 229, 255, 0.05);
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+.payment-info h3 { color: var(--primary); font-size: 1rem; margin-bottom: 12px; }
+.payment-info p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; }
+.payment-rekening {
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 12px 0;
+}
+.rekening-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9rem; }
+.rekening-label { color: var(--text-muted); }
+.payment-note {
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid var(--warning);
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 12px;
+}
+
+/* Toast */
+#toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.toast {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-width: 280px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    animation: slideIn 0.3s ease;
+}
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error { border-left: 3px solid var(--danger); }
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .hero h1 { font-size: 1.6rem; }
+    .hero-trust { gap: 16px; }
+    .product-grid { grid-template-columns: 1fr; }
+    .navbar .container { flex-direction: column; gap: 8px; }
+}

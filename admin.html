@@ -46,6 +46,12 @@
             document.getElementById('admin-main').style.display = 'none';
             document.getElementById('admin-auth-banner').style.display = 'block';
             showToast('Silakan login untuk mengakses admin.', 'warning');
+            // Auto redirect ke halaman login setelah 2 detik
+            setTimeout(() => {
+                if (localStorage.getItem('bangmx_admin_loggedin') !== 'true') {
+                    window.location.href = '/auth.html';
+                }
+            }, 2000);
         }
     });
 

@@ -74,6 +74,12 @@ document.getElementById('order-form')?.addEventListener('submit', async (e) => {
     };
     
     currentOrder = order;
+    // Simpan ke localStorage biar tampil di admin panel (fallback tanpa backend)
+    try {
+        const history = JSON.parse(localStorage.getItem('bangmx_order_history') || '[]');
+        history.push(order);
+        localStorage.setItem('bangmx_order_history', JSON.stringify(history));
+    } catch(e) {}
     showPaymentInfo(order);
     showSection('payment-section');
     showToast('Order berhasil dibuat! Melakukan pembayaran.', 'success');
